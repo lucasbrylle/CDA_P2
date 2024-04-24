@@ -69,6 +69,7 @@ index_ = sort(abs(cc1$ycoef[0:11, 1]), index.return=TRUE)$ix
 colnames(Y)[index_]
 
 
+
 plot(c(1:56),cc1$xcoef[0:56,2], "l")
 plot(c(1:11),cc1$ycoef[0:11,2], "l")
 
@@ -84,6 +85,108 @@ sort(abs(cc1$ycoef[0:11, 2]), index.return=TRUE)$ix
 
 plot(c(1:56),cc1$xcoef[0:56,3], "l")
 plot(c(1:11),cc1$ycoef[0:11,3], "l")
+
+
+
+install.packages("ggpubr")
+library(ggplot2)
+
+
+v1 <- data.frame(x_feature = c(1:56), coefficient=cc1$xcoef[0:56,1], component='v1')
+v2 <- data.frame(x_feature = c(1:56), coefficient=cc1$xcoef[0:56,2], component='v2')
+v3 <- data.frame(x_feature = c(1:56), coefficient=cc1$xcoef[0:56,3], component='v3')
+
+
+col_ = colnames(X)
+ind = abs(v1$coefficient) < 100
+col_[ind] = ''
+
+test1 <- ggplot(data = v1, aes(x=x_feature, y=coefficient)) +
+    geom_point(size=4) +
+    geom_segment(aes(x=x_feature,xend=x_feature,y=0,yend=coefficient), size=2, alpha=0.5) +
+    theme(text = element_text(size = 20),
+        legend.text = element_text(size=20)) +
+        geom_text(aes(x=x_feature, y=coefficient, label=col_), fontface='bold', 
+        color='red')
+
+col_ = colnames(X)
+ind = abs(v2$coefficient) < 100
+col_[ind] = ''
+
+test2 <- ggplot(data = v2, aes(x=x_feature, y=coefficient)) +
+    geom_point(size=4) +
+    geom_segment(aes(x=x_feature,xend=x_feature,y=0,yend=coefficient), size=2, alpha=0.5) +
+    theme(text = element_text(size = 20),
+        legend.text = element_text(size=20)) +
+        geom_text(aes(x=x_feature, y=coefficient, label=col_), fontface='bold', 
+        color='red')
+
+col_ = colnames(X)
+ind = abs(v3$coefficient) < 100
+col_[ind] = ''
+
+test3 <- ggplot(data = v3, aes(x=x_feature, y=coefficient)) +
+    geom_point(size=4) +
+    geom_segment(aes(x=x_feature,xend=x_feature,y=0,yend=coefficient), size=2, alpha=0.5) +
+    theme(text = element_text(size = 20),
+        legend.text = element_text(size=20)) +
+        geom_text(aes(x=x_feature, y=coefficient, label=col_), fontface='bold', 
+        color='red')
+
+library(ggpubr)
+ggarrange(test1, test2, test3, labels=c('v1', 'v2', 'v3'),ncol=1, nrow=3,
+font.label = list(size = 40, color = "black", face = "bold"))
+
+ggsave("CDA_P2/v_plot.png",width=7, height=12, dpi=300)
+
+
+
+u1 <- data.frame(y_feature = c(1:11), coefficient=cc1$ycoef[0:11,1], component='u1')
+u2 <- data.frame(y_feature = c(1:11), coefficient=cc1$ycoef[0:11,2], component='u2')
+u3 <- data.frame(y_feature = c(1:11), coefficient=cc1$ycoef[0:11,3], component='u3')
+
+
+col_ = colnames(Y)
+#ind = abs(u1$coefficient) < 10
+#col_[ind] = ''
+
+test1 <- ggplot(data = u1, aes(x=y_feature, y=coefficient)) +
+    geom_point(size=4) +
+    geom_segment(aes(x=y_feature,xend=y_feature,y=0,yend=coefficient), size=2, alpha=0.5) +
+    theme(text = element_text(size = 20),
+        legend.text = element_text(size=20)) +
+        geom_text(aes(x=y_feature, y=coefficient, label=col_), fontface='bold', 
+        color='red')
+
+col_ = colnames(Y)
+#ind = abs(u2$coefficient) < 100
+#col_[ind] = ''
+
+test2 <- ggplot(data = u2, aes(x=y_feature, y=coefficient)) +
+    geom_point(size=4) +
+    geom_segment(aes(x=y_feature,xend=y_feature,y=0,yend=coefficient), size=2, alpha=0.5) +
+    theme(text = element_text(size = 20),
+        legend.text = element_text(size=20)) +
+        geom_text(aes(x=y_feature, y=coefficient, label=col_), fontface='bold', 
+        color='red')
+
+col_ = colnames(Y)
+#ind = abs(u3$coefficient) < 100
+#col_[ind] = ''
+
+test3 <- ggplot(data = u3, aes(x=y_feature, y=coefficient)) +
+    geom_point(size=4) +
+    geom_segment(aes(x=y_feature,xend=y_feature,y=0,yend=coefficient), size=2, alpha=0.5) +
+    theme(text = element_text(size = 20),
+        legend.text = element_text(size=20)) +
+        geom_text(aes(x=y_feature, y=coefficient, label=col_), fontface='bold', 
+        color='red')
+
+library(ggpubr)
+ggarrange(test1, test2, test3, labels=c('u1', 'u2', 'u3'),ncol=1, nrow=3,
+font.label = list(size = 40, color = "black", face = "bold"))
+
+ggsave("CDA_P2/u_plot.png",width=7, height=12, dpi=300)
 
 
 
@@ -104,3 +207,6 @@ p.asym(rrho, N, p, q)
 # plot xcoef and ycoef
 plot(c(1:56),rcc1$xcoef[0:56,1], "l")
 plot(c(1:11),rcc1$ycoef[0:11,1], "l")
+
+
+install.packages("tidyverse")
