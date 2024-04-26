@@ -5,7 +5,7 @@
 
 
 # load dataframe
-dataframe <- read.csv("CDA_P2/HR_data.csv")
+dataframe <- read.csv("data/HR_data.csv")
 
 # remove rows with nans
 dataframe <- na.omit(dataframe)
@@ -92,33 +92,37 @@ project_data(x, y, cc1, n)
 }
 
 
-# ADVANCED PLOTTING, REQUIRES SOME PACKAGES
+# ADVANCED PLOTTING, REQUIRES SOME PACKAGESS
 library(ggplot2)
 library(ggpubr)
 
 
 plot_components <- function(df, n, col) {
-
+  
   index <- sort(abs(df$coefficient),
                 index.return = TRUE,
                 decreasing = TRUE)$ix[-n:0]
-
+  
   col[index] <- ""
-
+  
+  # calculating y limits
+  ymax <- max(df$coefficient, na.rm = TRUE)
+  y_extension <- ymax * 0.1  # extend by 10% for the text
+  
   # plotting the first component
   v1_plot <- ggplot(data = df, aes(x = feature, y = coefficient)) +
     geom_point(size = 4) +
     geom_segment(aes(x = feature, xend = feature, 
                      y = 0, yend = coefficient),
-                     linewidth = 2, alpha = 0.5) +
-    theme(text = element_text(size = 20),
+                 linewidth = 2, alpha = 0.5) +
+    theme(text = element_text(size = 15),
           legend.text = element_text(size = 20)) +
     geom_text(aes(x = feature, y = coefficient, label = col),
-              fontface = "bold", color = "red")
-
+              fontface = "bold", color = "red", vjust = -0.5) +
+    scale_y_continuous(limits = c(NA, ymax + y_extension)) # Extend the upper limit
+  
   return(v1_plot)
 }
-
 
 
 {
@@ -137,12 +141,12 @@ plot_components <- function(df, n, col) {
   v3_plot <- plot_components(df_v3, 5, colnames(x))
 
 
-  ggarrange(v1_plot, v2_plot, v3_plot, labels = c("v1", "v2", "v3"),
+  ggarrange(v1_plot, v2_plot, v3_plot, labels = c("V1", "V2", "V3"),
             ncol = 1, nrow = 3,
-            font.label = list(size = 40, color = "black", face = "bold"))
+            font.label = list(size = 15, color = "black", face = "bold"))
 }
 
-ggsave("CDA_P2/v_plot.png", dpi = 300)
+ggsave("v_plot.png", dpi = 300)
 # see pictured saved
 
 
@@ -163,11 +167,12 @@ ggsave("CDA_P2/v_plot.png", dpi = 300)
 
   u3_plot <- plot_components(df_u3, 5, colnames(y))
 
-  ggarrange(u1_plot, u2_plot, u3_plot, labels = c("u1", "u2", "u3"),
+  ggarrange(u1_plot, u2_plot, u3_plot, labels = c("U1", "U2", "U3"),
             ncol = 1, nrow = 3,
-            font.label = list(size = 40, color = "black", face = "bold"))
+            font.label = list(size = 15, color = "black", face = "bold"))
 }
 
 
-ggsave("CDA_P2/u_plot.png", dpi = 300)
+ggsave("u_plot.png", dpi = 300)
 # see picture saved
+

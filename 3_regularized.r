@@ -5,7 +5,7 @@
 
 
 # load dataframe
-dataframe <- read.csv("CDA_P2/HR_data.csv")
+dataframe <- read.csv("data/HR_data.csv")
 
 # remove rows with nans
 dataframe <- na.omit(dataframe)
@@ -123,24 +123,29 @@ library(ggpubr)
 
 
 plot_components <- function(df, n, col) {
-
+  
   index <- sort(abs(df$coefficient),
                 index.return = TRUE,
                 decreasing = TRUE)$ix[-n:0]
-
+  
   col[index] <- ""
-
+  
+  # calculating y limits
+  ymax <- max(df$coefficient, na.rm = TRUE)
+  y_extension <- ymax * 0.1  # extend by 10% for the text
+  
   # plotting the first component
   v1_plot <- ggplot(data = df, aes(x = feature, y = coefficient)) +
     geom_point(size = 4) +
     geom_segment(aes(x = feature, xend = feature, 
                      y = 0, yend = coefficient),
-                     linewidth = 2, alpha = 0.5) +
-    theme(text = element_text(size = 20),
+                 linewidth = 2, alpha = 0.5) +
+    theme(text = element_text(size = 15),
           legend.text = element_text(size = 20)) +
     geom_text(aes(x = feature, y = coefficient, label = col),
-              fontface = "bold", color = "red")
-
+              fontface = "bold", color = "red", vjust = -0.5) +
+    scale_y_continuous(limits = c(NA, ymax + y_extension)) # Extend the upper limit
+  
   return(v1_plot)
 }
 
