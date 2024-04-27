@@ -1,0 +1,270 @@
+---
+title: "CCA"
+output: html_document
+date: "2024-04-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(CCA)
+library(CCP)
+library(ggplot2)
+library(ggpubr)
+```
+
+## Load data
+
+```{r}
+
+dataframe <- read.csv("data\\HR_data.csv")
+dataframe <- na.omit(dataframe)
+col_ <- colnames(dataframe)
+
+xcols <- c(col_[2:56], col_[58])
+ycols_all <- c(col_[57], col_[59:68])
+ycols_p <- c(col_[61], col_[63], col_[65], col_[67], col_[68])            #Negative emotions
+ycols_n <- c(col_[57], col_[59], col_[60], col_[62], col_[64], col_[66])  #Positive emotions
+
+x <- dataframe[xcols]
+y_p <- dataframe[ycols_p]
+y_n <- dataframe[ycols_n]
+
+# one hot encoding
+x$Cohort <- as.numeric(as.factor(x$Cohort)) 
+x$Phase <- as.numeric(as.ordered(x$Phase))
+x$Round <- as.numeric(as.ordered(x$Round))
+```
+
+# CCA positive emotions
+
+## CCA and hypothesis test (Positive)
+
+```{r}
+cca_p <- cc(x, y_p)
+cat("Correlation for positive emotions:\n ", cca_p$cor)
+
+cat("\n\nDimensions for U for positive emotions: ", dim(cca_p$ycoef) )
+cat("\nDimensions for V for positive emotions: ",dim(cca_p$xcoef))
+
+#Hypothesis test
+rho_p <- cca_p$cor
+N <- 307
+p <- length(x)
+q_p <- length(y_p)
+
+cat("\n\nHypothesis test for positive emotions: \n")
+p.asym(rho_p, N, p, q_p)
+```
+
+Only the two first components are significant
+
+## CCA for the first 2 components (Positive)
+
+You can also embed plots, for example:
+
+```{r}
+v1_p <- cca_p$xcoef[0:56, 1]
+v2_p <- cca_p$xcoef[0:56, 2]
+
+u1_p <- cca_p$ycoef[0:q_p, 1]
+u2_p <- cca_p$ycoef[0:q_p, 2]
+```
+
+## Plot for V for positive emotions (Positive)
+
+```{r}
+df_v1_p <- data.frame(x_feature = c(1:56), coefficient = v1_p, component = "v1_p")
+df_v2_p <- data.frame(x_feature = c(1:56), coefficient = v2_p, component = "v2_p")
+
+# plotting the largest N components
+n1_p <- 5
+index1_p <- sort(abs(v1_p), index.return = TRUE, decreasing = TRUE)$ix[n1_p + 1:56]
+col1_p <- colnames(x)
+col1_p[index1_p] <- ""
+
+# plotting the first component
+v1_plot_p <- ggplot(data = df_v1_p, aes(x = x_feature, y = coefficient)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = x_feature, xend = x_feature, y = 0, yend = coefficient),
+               linewidth = 2, alpha = 0.5) +
+  theme(text = element_text(size = 20),
+        legend.text = element_text(size = 20)) +
+  geom_text(aes(x = x_feature, y = coefficient, label = col1_p),
+            fontface = "bold", color = "red")
+
+# plotting the largest N components
+n2_p <- 6
+index2_p <- sort(abs(v2_p), index.return = TRUE, decreasing = TRUE)$ix[n2_p + 1:56]
+col2_p <- colnames(x)
+col2_p[index2_p] <- ""
+
+# plotting the second component
+v2_plot_p <- ggplot(data = df_v2_p, aes(x = x_feature, y = coefficient)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = x_feature, xend = x_feature, y = 0, yend = coefficient),
+               linewidth = 2, alpha = 0.5) +
+  theme(text = element_text(size = 20),
+        legend.text = element_text(size = 20)) +
+  geom_text(aes(x = x_feature, y = coefficient, label = col2_p),
+            fontface = "bold", color = "red")
+
+
+ggarrange(v1_plot_p, v2_plot_p, labels = c("v1_p", "v2_p"),
+          ncol = 1, nrow = 2,
+          font.label = list(size = 20, color = "black", face = "bold"))
+
+
+
+```
+
+## Plot for U for positive emotions (Positive)
+
+```{r}
+df_u1_p <- data.frame(y_feature = c(1:q_p), coefficient = u1_p, component = "u1_p")
+df_u2_p <- data.frame(y_feature = c(1:q_p), coefficient = u2_p, component = "u2_p")
+
+col_p <- colnames(y_p)
+
+u1_plot_p <- ggplot(data = df_u1_p, aes(x = y_feature, y = coefficient)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = y_feature, xend = y_feature, y = 0, yend = coefficient),
+               linewidth = 2, alpha = 0.5) +
+  theme(text = element_text(size = 20),
+        legend.text = element_text(size = 20)) +
+  geom_text(aes(x = y_feature, y = coefficient, label = col_p),
+            fontface = "bold", color = "red", size = 7)
+
+u2_plot_p <- ggplot(data = df_u2_p, aes(x = y_feature, y = coefficient)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = y_feature, xend = y_feature, y = 0, yend = coefficient),
+               linewidth = 2, alpha = 0.5) +
+  theme(text = element_text(size = 20),
+        legend.text = element_text(size = 20)) +
+  geom_text(aes(x = y_feature, y = coefficient, label = col_p),
+            fontface = "bold", color = "red", size = 7)
+
+
+ggarrange(u1_plot_p, u2_plot_p, labels = c("u1_p", "u2_p"),
+          ncol = 1, nrow = 2,
+          font.label = list(size = 20, color = "black", face = "bold"))
+
+```
+
+# CCA for negative emotions
+
+## CCA and hypothesis test (Negative)
+
+```{r}
+cca_n <- cc(x, y_n)
+cat("Correlation for positive emotions:\n ", cca_n$cor)
+
+cat("\n\nDimensions for U for positive emotions: ", dim(cca_n$ycoef) )
+cat("\nDimensions for V for positive emotions: ",dim(cca_n$xcoef))
+
+#Hypothesis test
+rho_n <- cca_n$cor
+N <- 307
+p <- length(x)
+q_n <- length(y_n)
+
+cat("\n\nHypothesis test for negative emotions: \n")
+p.asym(rho_n, N, p, q_n)
+```
+
+Only the two first components are significant
+
+## CCA for the first 2 components (Negative)
+
+```{r}
+v1_n <- cca_n$xcoef[0:56, 1]
+v2_n <- cca_n$xcoef[0:56, 2]
+
+u1_n <- cca_n$ycoef[0:q_n, 1]
+u2_n <- cca_n$ycoef[0:q_n, 2]
+```
+
+## Plot for V for positive emotions (Negative)
+
+```{r}
+
+# ADVANCED PLOTTING, REQUIRES SOME PACKAGES
+df_v1_n <- data.frame(x_feature = c(1:56), coefficient = v1_n, component = "v1_n")
+df_v2_n <- data.frame(x_feature = c(1:56), coefficient = v2_n, component = "v2_n")
+
+# plotting the largest N components
+n1_n <- 5
+index1_n <- sort(abs(v1_n), index.return = TRUE, decreasing = TRUE)$ix[n1_n + 1:56]
+col1_n <- colnames(x)
+col1_n[index1_n] <- ""
+
+# plotting the first component
+v1_plot_n <- ggplot(data = df_v1_n, aes(x = x_feature, y = coefficient)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = x_feature, xend = x_feature, y = 0, yend = coefficient),
+               linewidth = 2, alpha = 0.5) +
+  theme(text = element_text(size = 20),
+        legend.text = element_text(size = 20)) +
+  geom_text(aes(x = x_feature, y = coefficient, label = col1_n),
+            fontface = "bold", color = "red")
+
+# plotting the largest N components
+n2_n <- 6
+index2_n <- sort(abs(v2_n), index.return = TRUE, decreasing = TRUE)$ix[n2_n + 1:56]
+col2_n <- colnames(x)
+col2_n[index2_n] <- ""
+
+# plotting the second component
+v2_plot_n <- ggplot(data = df_v2_n, aes(x = x_feature, y = coefficient)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = x_feature, xend = x_feature, y = 0, yend = coefficient),
+               linewidth = 2, alpha = 0.5) +
+  theme(text = element_text(size = 20),
+        legend.text = element_text(size = 20)) +
+  geom_text(aes(x = x_feature, y = coefficient, label = col2_n),
+            fontface = "bold", color = "red")
+
+
+
+ggarrange(v1_plot_n, v2_plot_n, labels = c("v1_n", "v2_n"),
+          ncol = 1, nrow = 2,
+          font.label = list(size = 20, color = "black", face = "bold"))
+```
+
+## Plot for U for positive emotions (Negative)
+
+```{r}
+
+df_u1_n <- data.frame(y_feature = c(1:q_n), coefficient = u1_n, component = "u1_n")
+df_u2_n <- data.frame(y_feature = c(1:q_n), coefficient = u2_n, component = "u2_n")
+
+col_n <- colnames(y_n)
+
+
+u1_plot_n <- ggplot(data = df_u1_n, aes(x = y_feature, y = coefficient)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = y_feature, xend = y_feature, y = 0, yend = coefficient),
+               linewidth = 2, alpha = 0.5) +
+  theme(text = element_text(size = 20),
+        legend.text = element_text(size = 20)) +
+  geom_text(aes(x = y_feature, y = coefficient, label = col_n),
+            fontface = "bold", color = "red", size = 7)
+
+
+
+u2_plot_n <- ggplot(data = df_u2_n, aes(x = y_feature, y = coefficient)) +
+  geom_point(size = 4) +
+  geom_segment(aes(x = y_feature, xend = y_feature, y = 0, yend = coefficient),
+               linewidth = 2, alpha = 0.5) +
+  theme(text = element_text(size = 20),
+        legend.text = element_text(size = 20)) +
+  geom_text(aes(x = y_feature, y = coefficient, label = col_n),
+            fontface = "bold", color = "red", size = 7)
+
+
+ggarrange(u1_plot_n, u2_plot_n, labels = c("u1_n", "u2_n"),
+          ncol = 1, nrow = 2,
+          font.label = list(size = 20, color = "black", face = "bold"))
+```
