@@ -19,7 +19,7 @@ library(ggpubr)
 
 ```{r}
 
-dataframe <- read.csv("data\\HR_data.csv")
+dataframe <- read.csv("/data/HR_data.csv")
 dataframe <- na.omit(dataframe)
 col_ <- colnames(dataframe)
 
